@@ -1,44 +1,55 @@
 import { useState, useEffect } from 'react'
 import { useDB } from './useDB.js'
 import { useTransactionVersion } from './useTransactionBus.js'
+import {
+  getMonthTotals,
+  getDailyFlow,
+  getCategoryDistribution,
+  getTopExpenses,
+  getSavingsGoal,
+} from '../db/dashboard.js'
+
+const now = new Date()
+
+const EMPTY = {
+  totals: { income: 0, expenses: 0, net: 0, balance: 0 },
+  dailyFlow: [],
+  categoryDist: [],
+  topExpenses: [],
+  savingsGoal: null,
+}
 
 export function useDashboardStats() {
   const { db } = useDB()
   const version = useTransactionVersion()
-  const [stats, setStats] = useState({ income: 0, expenses: 0, balance: 0 })
+  const [year, setYear] = useState(now.getFullYear())
+  const [month, setMonth] = useState(now.getMonth() + 1)
+  const [data, setData] = useState(EMPTY)
 
   useEffect(() => {
     if (!db) return
-
-    const now = new Date()
-    const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-
-    // Current month totals by type
-    const monthRows = []
-    db.exec({
-      sql: `SELECT type, SUM(amount) AS total
-            FROM transactions
-            WHERE strftime('%Y-%m', date) = ?
-            GROUP BY type`,
-      bind: [monthStr],
-      rowMode: 'object',
-      resultRows: monthRows,
+    setData({
+      totals:       getMonthTotals(db, year, month),
+      dailyFlow:    getDailyFlow(db, year, month),
+      categoryDist: getCategoryDistribution(db, year, month),
+      topExpenses:  getTopExpenses(db, year, month),
+      savingsGoal:  getSavingsGoal(db, year, month),
     })
+  }, [db, version, year, month])
 
-    let income = 0
-    let expenses = 0
-    for (const r of monthRows) {
-      if (r.type === 'income') income = r.total ?? 0
-      else if (r.type === 'expense') expenses = r.total ?? 0
-    }
+  function prevMonth() {
+    if (month === 1) { setYear(y => y - 1); setMonth(12) }
+    else setMonth(m => m - 1)
+  }
 
-    // All-time cumulative balance
-    const balance = db.selectValue(
-      `SELECT COALESCE(SUM(CASE WHEN type='income' THEN amount ELSE -amount END), 0) FROM transactions`
-    ) ?? 0
+  function nextMonth() {
+    const curY = now.getFullYear(), curM = now.getMonth() + 1
+    if (year > curY || (year === curY && month >= curM)) return
+    if (month === 12) { setYear(y => y + 1); setMonth(1) }
+    else setMonth(m => m + 1)
+  }
 
-    setStats({ income, expenses, balance })
-  }, [db, version])
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1
 
-  return stats
+  return { year, month, prevMonth, nextMonth, isCurrentMonth, ...data }
 }
