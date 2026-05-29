@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useDB } from './useDB.js'
+import { notifyTransactionChange, useTransactionVersion } from './useTransactionBus.js'
 import { listTransactions, createTransaction, updateTransaction, deleteTransaction } from '../db/transactions.js'
 import { listCategories } from '../db/categories.js'
 
@@ -7,6 +8,7 @@ const now = new Date()
 
 export function useTransactions() {
   const { db } = useDB()
+  const version = useTransactionVersion()
   const [transactions, setTransactions] = useState([])
   const [categories, setCategories] = useState([])
   const [filters, setFilters] = useState({
@@ -16,36 +18,34 @@ export function useTransactions() {
     month: now.getMonth() + 1,
   })
 
-  const loadTransactions = useCallback(() => {
+  // Re-query whenever db, filters, or version (global mutation signal) change
+  useEffect(() => {
     if (!db) return
     setTransactions(listTransactions(db, filters))
-  }, [db, filters])
+  }, [db, version, filters])
 
-  const loadCategories = useCallback(() => {
+  useEffect(() => {
     if (!db) return
     setCategories(listCategories(db))
   }, [db])
 
-  useEffect(() => { loadTransactions() }, [loadTransactions])
-  useEffect(() => { loadCategories() }, [loadCategories])
-
   const addTransaction = useCallback((data) => {
     if (!db) return
     createTransaction(db, data)
-    loadTransactions()
-  }, [db, loadTransactions])
+    notifyTransactionChange()
+  }, [db])
 
   const editTransaction = useCallback((id, data) => {
     if (!db) return
     updateTransaction(db, id, data)
-    loadTransactions()
-  }, [db, loadTransactions])
+    notifyTransactionChange()
+  }, [db])
 
   const removeTransaction = useCallback((id) => {
     if (!db) return
     deleteTransaction(db, id)
-    loadTransactions()
-  }, [db, loadTransactions])
+    notifyTransactionChange()
+  }, [db])
 
   return { transactions, categories, filters, setFilters, addTransaction, editTransaction, removeTransaction }
 }
