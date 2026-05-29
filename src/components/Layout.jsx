@@ -7,6 +7,7 @@ import {
   Settings,
   TrendingUp,
 } from 'lucide-react'
+import { useTheme } from '../hooks/useTheme.js'
 
 const nav = [
   { to: '/',             label: 'Dashboard',     icon: LayoutDashboard },
@@ -17,6 +18,7 @@ const nav = [
 ]
 
 export default function Layout() {
+  useTheme() // reads saved theme from DB and applies html.light class
   return (
     <div className="flex h-screen bg-gray-950 text-gray-100">
       {/* Sidebar */}

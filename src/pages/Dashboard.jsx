@@ -252,7 +252,7 @@ export default function Dashboard() {
   } = useDashboardStats()
 
   const { db } = useDB()
-  const categories = useCategories()
+  const { categories } = useCategories()
   const [fabOpen, setFabOpen] = useState(false)
 
   function handleQuickAdd(data) {

@@ -1,1 +1,48 @@
 @import "tailwindcss";
+
+/* ─── Light mode overrides ──────────────────────────────────────────────────
+   Applied when <html> has class="light". Uses higher specificity (element +
+   class) to win over Tailwind's single-class rules without !important.
+   Recharts inline-style colours and opacity-modifier classes (bg-x/30) are
+   not overridden here — they remain dark-optimised in light mode.
+   ───────────────────────────────────────────────────────────────────────── */
+
+html.light body { background-color: #f3f4f6; color: #111827; }
+
+/* Backgrounds */
+html.light .bg-gray-950 { background-color: #f3f4f6; }
+html.light .bg-gray-900 { background-color: #ffffff; }
+html.light .bg-gray-800 { background-color: #f3f4f6; }
+html.light .bg-gray-700 { background-color: #e5e7eb; }
+
+/* Borders */
+html.light .border-gray-800 { border-color: #e5e7eb; }
+html.light .border-gray-700 { border-color: #d1d5db; }
+html.light .border-gray-600 { border-color: #d1d5db; }
+
+/* Text */
+html.light .text-white    { color: #111827; }
+html.light .text-gray-100 { color: #1f2937; }
+html.light .text-gray-200 { color: #374151; }
+html.light .text-gray-300 { color: #4b5563; }
+html.light .text-gray-400 { color: #6b7280; }
+html.light .text-gray-500 { color: #9ca3af; }
+html.light .text-gray-600 { color: #9ca3af; }
+html.light .text-gray-700 { color: #6b7280; }
+
+/* Restore white text on solid coloured backgrounds (nav active, buttons) */
+html.light .bg-indigo-600 { color: #ffffff; }
+html.light .bg-indigo-500 { color: #ffffff; }
+html.light .bg-green-600  { color: #ffffff; }
+html.light .bg-red-600    { color: #ffffff; }
+
+/* Hover states */
+html.light .hover\:bg-gray-800:hover  { background-color: #f3f4f6; }
+html.light .hover\:bg-gray-700:hover  { background-color: #e5e7eb; }
+html.light .hover\:text-gray-100:hover { color: #111827; }
+html.light .hover\:text-gray-200:hover { color: #374151; }
+
+/* Divide lines */
+html.light .divide-gray-800 > * + * { border-color: #e5e7eb; }
+
+/* Focus rings stay the same (indigo), no override needed */
